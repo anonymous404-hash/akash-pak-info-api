@@ -30,9 +30,9 @@ API_KEYS = {
         "expiry": "2030-03-30",
         "status": "active"
     },
-    "AKASH_TEST_KEY": {
+    "AKASH_31DAYS": {
         "name": "Test User",
-        "expiry": "2026-02-20",
+        "expiry": "2026-02-31",
         "status": "active"
     },
     "AKASH_FREE": {
