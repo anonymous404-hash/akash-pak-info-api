@@ -30,7 +30,7 @@ API_KEYS = {
         "expiry": "2030-03-30",
         "status": "active"
     },
-    "AKASH_31DAYS": {
+    "AKASH_PAID31DAYS": {
         "name": "Normal User",
         "expiry": "2026-02-31",
         "status": "active"
