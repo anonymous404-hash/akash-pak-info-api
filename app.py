@@ -18,7 +18,7 @@ ALLOW_UPSTREAM = True
 MIN_INTERVAL = float(os.getenv("MIN_INTERVAL", "1.0"))
 LAST_CALL = {"ts": 0.0}
 
-COPYRIGHT_HANDLE = os.getenv("COPYRIGHT_HANDLE", "@AkashHacker")
+COPYRIGHT_HANDLE = os.getenv("COPYRIGHT_HANDLE", "@Akashishare")
 COPYRIGHT_NOTICE = "👉🏻 " + COPYRIGHT_HANDLE
 
 # -------------------------
@@ -243,7 +243,7 @@ def health():
     return respond_json({
         "status": "operational",
         "service": "Number Info API",
-        "developer": "AKASHHACKER",
+        "developer": "@Akashishare",
         "keys_active": len([k for k in API_KEYS.values() if k["status"] == "active"]),
         "copyright": COPYRIGHT_NOTICE
     })
