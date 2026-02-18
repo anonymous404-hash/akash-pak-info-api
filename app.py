@@ -25,9 +25,9 @@ COPYRIGHT_NOTICE = "👉🏻 " + COPYRIGHT_HANDLE
 # API KEYS DATABASE (Hardcoded for Vercel)
 # -------------------------
 API_KEYS = {
-    "AKASH_PAID31DAYS": {
+    "AKASH_PARMA": {
         "name": "Premium User",
-        "expiry": "2026-03-31",
+        "expiry": "2030-03-30",
         "status": "active"
     },
     "AKASH_TEST_KEY": {
