@@ -30,14 +30,14 @@ API_KEYS = {
         "expiry": "2030-03-30",
         "status": "active"
     },
-    "AKASH_PAID31DAYS": {
+    "AKASH_PAID3DAYS": {
         "name": "Free Trial",
         "expiry": "2026-02-31",
         "status": "active"
     },
-    "AKASH_FREE": {
+    "AKASH_PAID31DAYS": {
         "name": "Free Trial",
-        "expiry": "2026-02-15",
+        "expiry": "2026-02-31",
         "status": "active"
     }
 }
