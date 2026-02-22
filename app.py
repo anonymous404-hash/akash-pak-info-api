@@ -21,7 +21,7 @@ LAST_CALL = {"ts": 0.0}
 # Final Branding Update
 COPYRIGHT_HANDLE = "@Akash_Exploits_bot"
 COPYRIGHT_NOTICE = "👉🏻 " + COPYRIGHT_HANDLE
-DEV_NAME = "Akash Exploitss"
+DEV_NAME = "Akash_Exploits_bot"
 
 # -------------------------
 # API KEYS DATABASE
