@@ -3,14 +3,14 @@ import re
 import time
 import json
 import requests
-from datetime import datetime, timedelta
-from flask import Flask, request, Response, url_for
+from datetime import datetime
+from flask import Flask, request, Response
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
 # -------------------------
-# Config
+# Config - Updated Branding
 # -------------------------
 TARGET_BASE = os.getenv("TARGET_BASE", "https://pakistandatabase.com")
 TARGET_PATH = os.getenv("TARGET_PATH", "/databases/sim.php")
@@ -18,11 +18,13 @@ ALLOW_UPSTREAM = True
 MIN_INTERVAL = float(os.getenv("MIN_INTERVAL", "1.0"))
 LAST_CALL = {"ts": 0.0}
 
-COPYRIGHT_HANDLE = os.getenv("COPYRIGHT_HANDLE", "@Akashishare")
+# Final Branding Update
+COPYRIGHT_HANDLE = "@Akash_Exploits_bot"
 COPYRIGHT_NOTICE = "👉🏻 " + COPYRIGHT_HANDLE
+DEV_NAME = "Akash Exploitss"
 
 # -------------------------
-# API KEYS DATABASE (Hardcoded for Vercel)
+# API KEYS DATABASE
 # -------------------------
 API_KEYS = {
     "AKASH_PARMA": {
@@ -30,14 +32,9 @@ API_KEYS = {
         "expiry": "2030-03-30",
         "status": "active"
     },
-    "AKASH_PAID3DAYS": {
-        "name": "Free Trial",
-        "expiry": "2026-02-31",
-        "status": "active"
-    },
-    "AKASH_PAID31DAYS": {
-        "name": "Free Trial",
-        "expiry": "2026-02-31",
+    "AKASH_PAID30DAYS": {
+        "name": "VIP User",
+        "expiry": "2026-03-20",
         "status": "active"
     }
 }
@@ -53,11 +50,9 @@ def is_cnic(value: str) -> bool:
 
 def classify_query(value: str):
     v = value.strip()
-    if is_mobile(v):
-        return "mobile", v
-    if is_cnic(v):
-        return "cnic", v
-    raise ValueError("Invalid query. Use mobile with country code (92...) or CNIC (13 digits).")
+    if is_mobile(v): return "mobile", v
+    if is_cnic(v): return "cnic", v
+    raise ValueError("Invalid format")
 
 def rate_limit_wait():
     now = time.time()
@@ -67,15 +62,11 @@ def rate_limit_wait():
     LAST_CALL["ts"] = time.time()
 
 def fetch_upstream(query_value: str):
-    if not ALLOW_UPSTREAM:
-        raise PermissionError("Upstream fetching disabled.")
     rate_limit_wait()
     session = requests.Session()
     headers = {
-        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                       "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"),
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Referer": TARGET_BASE.rstrip("/") + "/",
-        "Accept-Language": "en-US,en;q=0.9",
     }
     url = TARGET_BASE.rstrip("/") + TARGET_PATH
     data = {"search_query": query_value}
@@ -85,14 +76,10 @@ def fetch_upstream(query_value: str):
 
 def parse_table(html: str):
     soup = BeautifulSoup(html, "html.parser")
-    table = soup.find("table", {"class": "api-response"}) or soup.find("table")
-    if not table:
-        return []
-    tbody = table.find("tbody")
-    if not tbody:
-        return []
+    table = soup.find("table")
+    if not table: return []
     results = []
-    for tr in tbody.find_all("tr"):
+    for tr in table.find_all("tr")[1:]: # Skip header
         cols = [td.get_text(strip=True) for td in tr.find_all("td")]
         if len(cols) >= 4:
             results.append({
@@ -100,45 +87,28 @@ def parse_table(html: str):
                 "name": cols[1],
                 "cnic": cols[2],
                 "address": cols[3]
-                # Operator field removed as requested
             })
     return results
 
 def validate_api_key(api_key: str):
-    """Validate API key and check expiry"""
-    if not api_key:
-        return False, {"error": "API Key missing! Use ?key=YOUR_KEY"}
-    
+    if not api_key: return False, {"error": "Key Missing"}
     key_data = API_KEYS.get(api_key)
-    if not key_data:
-        return False, {"error": "Invalid API Key! Access Denied."}
+    if not key_data: return False, {"error": "Access Denied"}
     
-    # Check expiry
     expiry_date = datetime.strptime(key_data["expiry"], "%Y-%m-%d")
     today = datetime.now()
+    if today > expiry_date: return False, {"error": "Key Expired"}
     
-    if today > expiry_date:
-        return False, {"error": f"API Key expired on {key_data['expiry']}"}
-    
-    # Calculate days remaining
-    days_remaining = (expiry_date - today).days
-    
-    key_info = {
-        "key_name": key_data["name"],
-        "expiry_date": key_data["expiry"],
-        "days_remaining": days_remaining,
+    return True, {
+        "user": key_data["name"],
+        "expiry": key_data["expiry"],
         "status": "Active"
     }
-    
-    return True, key_info
 
-def respond_json(obj, pretty=False, status=200):
-    if pretty:
-        text = json.dumps(obj, indent=2, ensure_ascii=False)
-        return Response(text, mimetype="application/json; charset=utf-8", status=status)
+def respond_json(obj, status=200):
     return Response(
-        json.dumps(obj, ensure_ascii=False), 
-        mimetype="application/json; charset=utf-8",
+        json.dumps(obj, indent=2, ensure_ascii=False), 
+        mimetype="application/json",
         status=status
     )
 
@@ -147,112 +117,48 @@ def respond_json(obj, pretty=False, status=200):
 # -------------------------
 @app.route("/", methods=["GET"])
 def home():
-    return """
-    <h2>🔐 AKASHHACKER - NUMBER INFO API</h2>
-    <p>Secure API with Key Authentication</p>
-    <p>Use: <code>/api/number?num=92XXXXXXXXXX&key=YOUR_API_KEY</code></p>
-    <p>📞 For API Key: Contact @AkashExploits1 on Telegram</p>
+    return f"""
+    <h2>🔐 {DEV_NAME.upper()} - SYSTEM LIVE</h2>
+    <p>Developer: {COPYRIGHT_HANDLE}</p>
+    <p>Usage: <code>/api/number?num=92XXXXXXXXXX&key=YOUR_KEY</code></p>
+    <p>Contact: <a href="https://t.me/Akash_Exploits_bot">Support Bot</a></p>
     """
 
 @app.route("/api/number", methods=["GET"])
 def api_number():
-    """Main API endpoint with key authentication"""
-    # Get parameters
     number = request.args.get("num")
     api_key = request.args.get("key")
-    pretty = request.args.get("pretty") in ("1", "true", "True")
     
-    # 1. Validate API Key
-    is_valid, key_result = validate_api_key(api_key)
-    if not is_valid:
-        return respond_json({
-            "success": False,
-            **key_result
-        }, pretty=pretty, status=401)
+    is_valid, key_info = validate_api_key(api_key)
+    if not is_valid: return respond_json({"success": False, **key_info}, status=401)
     
-    # 2. Check if number provided
-    if not number:
-        return respond_json({
-            "success": False,
-            "error": "Please provide phone number with ?num=92XXXXXXXXXX"
-        }, pretty=pretty, status=400)
+    if not number: return respond_json({"success": False, "error": "Enter Number"}, status=400)
     
-    # 3. Validate number format
     try:
         qtype, normalized = classify_query(number)
-    except ValueError as e:
-        return respond_json({
-            "success": False,
-            "error": "Invalid number format",
-            "detail": "Use Pakistani mobile with 92XXXXXXXXXX format"
-        }, pretty=pretty, status=400)
-    
-    # 4. Fetch data from upstream
-    try:
         html = fetch_upstream(normalized)
         results = parse_table(html)
         
-        if not results:
-            return respond_json({
-                "success": True,
-                "developer": "AKASHHACKER",
-                "key_details": key_result,
-                "query": normalized,
-                "query_type": qtype,
-                "results_count": 0,
-                "data": [],
-                "message": "No records found for this number",
-                "copyright": COPYRIGHT_NOTICE
-            }, pretty=pretty)
-        
-        # Success response
         return respond_json({
             "success": True,
-            "developer": "AKASHHACKER",
-            "key_details": key_result,
-            "query": normalized,
-            "query_type": qtype,
+            "api_owner": DEV_NAME,
+            "bot_handle": COPYRIGHT_HANDLE,
+            "key_status": key_info,
             "results_count": len(results),
             "data": results,
             "copyright": COPYRIGHT_NOTICE
-        }, pretty=pretty)
+        })
         
     except Exception as e:
-        return respond_json({
-            "success": False,
-            "error": "Fetch failed",
-            "detail": str(e),
-            "developer": "AKASHHACKER",
-            "key_details": key_result
-        }, pretty=pretty, status=500)
-
-@app.route("/api/keys", methods=["GET"])
-def list_keys():
-    """List all API keys (for admin)"""
-    admin_key = request.args.get("admin")
-    if admin_key != "ADMIN_SECRET_KEY":  # Set in Vercel env
-        return respond_json({"error": "Unauthorized"}, status=403)
-    
-    return respond_json({
-        "total_keys": len(API_KEYS),
-        "keys": API_KEYS
-    }, pretty=True)
+        return respond_json({"success": False, "error": str(e)}, status=500)
 
 @app.route("/health", methods=["GET"])
 def health():
     return respond_json({
-        "status": "operational",
-        "service": "Number Info API",
-        "developer": "@Akashishare",
-        "keys_active": len([k for k in API_KEYS.values() if k["status"] == "active"]),
-        "copyright": COPYRIGHT_NOTICE
+        "status": "running",
+        "developer": COPYRIGHT_HANDLE,
+        "system": "TITAN HYPERION V6"
     })
 
-# -------------------------
-# Vercel Handler
-# -------------------------
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "5000"))
-    print(f"🚀 AKASHHACKER API Starting...")
-    print(f"📡 Mode: LIVE | Keys: {len(API_KEYS)}")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=5000)
